@@ -34,7 +34,13 @@ class Node:
     # Otherwise it should find the Node with ownership and act as a proxy to get data from 
     # that node and return to the client
     def get_data(self, key):
-        
+        if self._vnode_map != None :
+            nodestr = self._vnode_map.get_assigned_node( key )
+            node = self._node_dict.get(nodestr)
+            if node != None :
+                return node._data_store[ key ]
+            else:
+                return print( "Key {} is invalid".format(nodestr) )
         # Problem statement 2.a
         # Update this function to return value from local store if exists (assuming it's the owner)
         # Otherwise it should find the owner using get_assigned_node function in _vnode_map
@@ -54,12 +60,19 @@ class Node:
         if (force):
             self._data_store[key] = copy.deepcopy(value)
         else:
-            
+            nodestr = self._vnode_map.get_assigned_node( key )
+            node = self._node_dict.get(nodestr)
+            if node != None :
+                node._data_store[ key ] = copy.deepcopy( value )
+                return
+            else:
+                return print( "Key {} is invalid".format(nodestr) )
+
             # Problem statement 2.b
             # Update this else section to find the owner using get_assigned_node function in _vnode_map
             # and set the value in the correct node. Use direct assignment if its the current node
             # or call set_data in the remote note otherwise
-            self._data_store[key] = copy.deepcopy(value)
+            #self._data_store[key] = copy.deepcopy(value)
 
     def remove_data(self, key):
         return self._data_store.pop(key, 'Key not found')
