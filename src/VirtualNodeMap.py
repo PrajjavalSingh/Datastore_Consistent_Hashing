@@ -17,7 +17,7 @@ class VirtualNodeMap:
     def node_names(self):
         return self._node_names
 
-    # Populates the Virtual Node Nap, given the set of Node names.
+    # Populates the Virtual Node Map, given the set of Node names.
     # Creates a mapping of Virtual Node to corresponding assigned physical Node
     def populate_map(self):
         nodesz = len( self.node_names )

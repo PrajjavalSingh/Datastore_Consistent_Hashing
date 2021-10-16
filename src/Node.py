@@ -37,7 +37,7 @@ class Node:
         if self._vnode_map != None :
             nodestr = self._vnode_map.get_assigned_node( key )
             node = self._node_dict.get(nodestr)
-            if node != None :
+            if node != None and key in node._data_store:
                 return node._data_store[ key ]
             else:
                 return print( "Key {} is invalid".format(nodestr) )
@@ -115,8 +115,9 @@ class Node:
 
             # Transfer all keys for a vnode and remove them from the existing node
             for key in transfer_data['keys']:
-                target_node.set_data(key, self._data_store[key], True)
-                entry = self.remove_data(key)
+                if key in self._data_store:
+                    target_node.set_data(key, self._data_store[key], True)
+                    entry = self.remove_data(key)
 
             # Update virtual node maps for everyone
             for node in self._node_dict.values():
@@ -129,6 +130,10 @@ class Node:
         local_vnode_list = []
         self.add_node_to_mapping(new_node_name, new_node)
         
+
+        vnodemap = new_node.clone_vnode_map()
+        local_vnode_list = list( vnodemap._vnode_map.keys() )
+        random.shuffle(local_vnode_list)
         # Problem statement 3.a
         # Finds all vnodes mapped to this node and shuffles them
         # Implement this logic and store in local_vnode_list        
@@ -136,9 +141,18 @@ class Node:
         # Prepares to select proportional vnodes and their corresponding keys to transfer
         transfer_slice = round(len(local_vnode_list) / len(self._node_dict))
         local_vnode_slice = local_vnode_list[0:transfer_slice]
-
+        usridlist = list( self._data_store.keys() )
         transfer_dict = {}
-
+        target_node = {}
+        startidx = 0
+        binsz = 50
+        finidx = binsz
+        for ids in local_vnode_slice :
+            target_node['target_node'] = new_node_name
+            target_node['keys'] = usridlist[ startidx : finidx ]
+            startidx = finidx + 1
+            finidx = finidx + binsz 
+            transfer_dict[ids] = target_node
         # Problem statement 3.b
         # Loop over all keys and create the transfer dict structure
         # Only the relevant keys from vnodes in the local_vnode_slice should be considered
@@ -161,6 +175,9 @@ class Node:
         local_vnode_list = []
         self.populate_nodes(new_node_dict)
 
+        vnodemap = self.clone_vnode_map()
+        local_vnode_list = list( vnodemap._vnode_map.keys() )
+        random.shuffle(local_vnode_list)
         # Problem statement 4.a
         # Finds all vnodes mapped to this node and shuffles them
         # Implement this logic and store in local_vnode_list        
@@ -171,6 +188,17 @@ class Node:
         transfer_node_mapping = dict(zip(local_vnode_list, assigned_node_list))
 
         transfer_dict = {}
+        target_node = {}
+        usridlist = list( self._data_store.keys() )
+        startidx = 0
+        binsz = 50
+        finidx = binsz
+        for id in transfer_node_mapping :
+            target_node['target_node'] = transfer_node_mapping[id]
+            target_node['keys'] = usridlist[ startidx : finidx ]
+            startidx = finidx + 1
+            finidx = finidx + binsz 
+            transfer_dict[id] = target_node
 
         # Problem statement 4.b
         # Loop over all keys and create the transfer dict structure
